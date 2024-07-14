@@ -305,7 +305,7 @@ require('lazy').setup({
 
           -- Opens a popup that displays documentation about the word under your cursor
           --  See `:help K` for why this keymap.
-          map('K', vim.lsp.buf.hover, 'Hover Documentation')
+          map('<C-h>', vim.lsp.buf.hover, 'Hover Documentation')
 
           -- WARN: This is not Goto Definition, this is Goto Declaration.
           --  For example, in C this would take you to the header.
@@ -428,7 +428,11 @@ require('lazy').setup({
       }
     end,
   },
-
+  {
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    opts = {},
+  },
   { -- Autoformat
     'stevearc/conform.nvim',
     lazy = false,
@@ -486,12 +490,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -533,7 +537,7 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<C-m>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -639,7 +643,8 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'vim', 'vimdoc', 'javascript', 'typescript' },
+
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -674,73 +679,30 @@ require('lazy').setup({
       vim.cmd [[colorscheme vscode]]
     end,
   },
+  { 'catppuccin/nvim', name = 'catppuccin', priority = 1000 },
   {
-    'nvim-tree/nvim-tree.lua',
-    priority = 900,
-    dependencies = 'nvim-tree/nvim-web-devicons',
+    'nvim-neo-tree/neo-tree.nvim',
+    branch = 'v3.x',
+    dependencies = {
+      'nvim-lua/plenary.nvim',
+      'nvim-tree/nvim-web-devicons', -- not strictly required, but recommended
+      'MunifTanjim/nui.nvim',
+      -- "3rd/image.nvim", -- Optional image support in preview window: See `# Preview Mode` for more information
+    },
     config = function()
-      local nvimtree = require 'nvim-tree'
-
-      -- recommended settings from nvim-tree documentation
-      vim.g.loaded_netrw = 1
-      vim.g.loaded_netrwPlugin = 1
-
-      local keymap = vim.keymap -- for conciseness
-      local bufnr
-
-      local function my_attach(bufnr)
-        bufnr = bufnr
-        keymap.set('n', '<C-e>', '<cmd>NvimTreeToggle<CR>', { desc = 'Toggle file explorer on current file', noremap = true, silent = true }) -- toggle file explorer on current file
-      end
-
-      -- default mappings
-      local api = require 'nvim-tree.api'
-
-      api.config.mappings.default_on_attach(bufnr)
-      keymap.set('n', '<C-e>', '<cmd>NvimTreeToggle<CR>', { desc = 'Toggle file explorer' }) -- toggle file explorer
-      --keymap.set('n', '<C-e>', '<cmd>NvimTreeFindFileToggle<CR>', { desc = 'Toggle file explorer on current file', noremap = true, silent = true }) -- toggle file explorer on current file
-      nvimtree.setup {
-        on_attach = my_attach,
-        view = {
-          width = 30,
-          relativenumber = true,
-        },
-        -- change folder arrow icons
-        renderer = {
-          indent_markers = {
-            enable = true,
-          },
-          icons = {
-            glyphs = {
-              folder = {
-                arrow_closed = '', -- arrow when folder is closed
-                arrow_open = '', -- arrow when folder is open
-              },
-            },
+      vim.keymap.set('n', '<C-e>', function()
+        vim.cmd ':Neotree filesystem toggle reveal left'
+      end)
+      require('neo-tree').setup {
+        filesystem = {
+          follow_current_file = {
+            enable = false,
           },
         },
-        -- disable window_picker for
-        -- explorer to work well with
-        -- window splits
-        actions = {
-          open_file = {
-            window_picker = {
-              enable = false,
-            },
-          },
-        },
-        filters = {
-          custom = { '.DS_Store' },
-        },
-        git = {
-          ignore = false,
+        window = {
+          width = 25,
         },
       }
-
-      -- set keymaps
-
-      --keymap.set('n', '<leader>ec', '<cmd>NvimTreeCollapse<CR>', { desc = 'Collapse file explorer' }) -- collapse file explorer
-      --keymap.set('n', '<leader>er', '<cmd>NvimTreeRefresh<CR>', { desc = 'Refresh file explorer' }) -- refresh file explorer
     end,
   },
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
